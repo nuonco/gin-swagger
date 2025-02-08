@@ -120,7 +120,7 @@ func Oauth2UsePkce(usePkce bool) func(*Config) {
 
 // WrapHandler wraps `http.Handler` into `gin.HandlerFunc`.
 func WrapHandler(handler *webdav.Handler, options ...func(*Config)) gin.HandlerFunc {
-	var config = Config{
+	config := Config{
 		URL:                      "doc.json",
 		DocExpansion:             "list",
 		InstanceName:             swag.Name,
@@ -156,7 +156,7 @@ func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc 
 	js, _ := textTemplate.New("swagger_index.js").Parse(swaggerJSTpl)
 	css, _ := textTemplate.New("swagger_index.css").Parse(swaggerStyleTpl)
 
-	var matcher = regexp.MustCompile(`(.*)(index\.html|index\.css|swagger-initializer\.js|doc\.json|favicon-16x16\.png|favicon-32x32\.png|/oauth2-redirect\.html|swagger-ui\.css|swagger-ui\.css\.map|swagger-ui\.js|swagger-ui\.js\.map|swagger-ui-bundle\.js|swagger-ui-bundle\.js\.map|swagger-ui-standalone-preset\.js|swagger-ui-standalone-preset\.js\.map)[?|.]*`)
+	matcher := regexp.MustCompile(`(.*)(index\.html|index\.css|swagger-initializer\.js|doc\.json|favicon-16x16\.png|favicon-32x32\.png|/oauth2-redirect\.html|swagger-ui\.css|swagger-ui\.css\.map|swagger-ui\.js|swagger-ui\.js\.map|swagger-ui-bundle\.js|swagger-ui-bundle\.js\.map|swagger-ui-standalone-preset\.js|swagger-ui-standalone-preset\.js\.map)[?|.]*`)
 
 	return func(ctx *gin.Context) {
 		if ctx.Request.Method != http.MethodGet {
@@ -264,6 +264,10 @@ body {
 const swaggerJSTpl = `
 window.onload = function() {
   // Build a system
+  const urlParams = new URLSearchParams(window.location.search);
+  const apiKey = urlParams.get('api_key');
+  const orgID = urlParams.get('org_id');
+
   const ui = SwaggerUIBundle({
     url: "{{.URL}}",
     dom_id: '#swagger-ui',
@@ -274,6 +278,17 @@ window.onload = function() {
       SwaggerUIBundle.presets.apis,
       SwaggerUIStandalonePreset
     ],
+    onComplete: function() {
+          if (apiKey) {
+            ui.preauthorizeApiKey("APIKey", apiKey);
+            console.log(apiKey);
+          }
+
+          if (orgID) {
+            ui.preauthorizeApiKey("OrgID", orgID);
+            console.log(orgID);
+          }
+    },
     plugins: [
       SwaggerUIBundle.plugins.DownloadUrl
     ],
