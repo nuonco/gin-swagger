@@ -1,4 +1,4 @@
-module github.com/swaggo/gin-swagger
+module github.com/nuonco/gin-swagger
 
 go 1.17
 
